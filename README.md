@@ -1,1 +1,1 @@
-# BibleGachaJP
+# BibleGachaEN
