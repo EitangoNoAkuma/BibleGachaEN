@@ -112,7 +112,8 @@ export default function App() {
   const [currentCard, setCurrentCard] = useState(null);
   const [rarityNumber, setRarityNumber] = useState(rollRarityNumber);
   const [album, setAlbum] = useState([]);
-  const [revealKey, setRevealKey] = useState(0);
+  const [packKey, setPackKey] = useState(0);
+  const [isPackOpened, setIsPackOpened] = useState(false);
 
   useEffect(() => {
     setAlbum(loadAlbum());
@@ -162,7 +163,8 @@ export default function App() {
     const randomCard = await getRandomCardFromDb(dbRef.current, cardCount);
     setCurrentCard(randomCard);
     setRarityNumber(rollRarityNumber());
-    setRevealKey((prev) => prev + 1);
+    setIsPackOpened(false);
+    setPackKey((prev) => prev + 1);
   };
 
   const addToAlbum = () => {
@@ -191,49 +193,46 @@ export default function App() {
 
         <section className="grid items-start gap-8 lg:grid-cols-[340px_1fr]">
           <div
-            key={revealKey}
+            key={packKey}
             className="animate-fadeIn rounded-[22px] border-4 border-black bg-black p-[8px] shadow-[0_16px_50px_rgba(0,0,0,0.55)]"
           >
             {currentCard ? (
-              <article className="flex aspect-[63/88] flex-col rounded-[14px] border-2 border-zinc-900 bg-[#efe5cf] p-2.5 text-zinc-900">
-                <div className="mt-2 flex min-h-[40%] items-center justify-center rounded border border-zinc-700 bg-gradient-to-b from-[#d9c8a2] via-[#c7af83] to-[#aa8e62] px-2">
-                  <p className="w-full whitespace-nowrap text-center text-[clamp(1.7rem,7vw,3rem)] font-black lowercase tracking-[0.06em] text-zinc-900">
-                    {currentCard.headword.toLowerCase()}
-                  </p>
-                </div>
-
-                <div className="mt-2 rounded border border-zinc-700 bg-[#f7f0dc] px-2 py-1 text-[11px] font-semibold tracking-[0.08em] text-zinc-800">
-                  品詞：{POS_JA[currentCard.partOfSpeech] ?? currentCard.partOfSpeech}
-                </div>
-
-                <div className="mt-2 flex flex-1 flex-col rounded border border-zinc-700 bg-[#f5ecd6] px-2.5 py-2">
-                  <p className="text-[12px] leading-relaxed text-zinc-800">{currentCard.definition}</p>
-                  <div className="mt-2 space-y-1 text-[11px] text-zinc-700">
-                    <p>
-                      <span className="font-semibold">発音</span> {currentCard.pronunciation}
-                    </p>
-                    <p>
-                      <span className="font-semibold">レベル</span> {currentCard.cefr}
-                    </p>
-                    <p>
-                      <span className="font-semibold">学習帯</span> {currentCard.gradeBand}
-                    </p>
-                    <p className="font-semibold">コロケーション</p>
-                    <ul className="list-inside list-disc">
-                      {currentCard.collocations.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                    <p>
-                      <span className="font-semibold">例文</span> {currentCard.example}
+              isPackOpened ? (
+                <article className="flex aspect-[63/88] flex-col rounded-[14px] border-2 border-zinc-900 bg-[#efe5cf] p-2.5 text-zinc-900">
+                  <div className="mt-2 flex min-h-[40%] items-center justify-center rounded border border-zinc-700 bg-gradient-to-b from-[#d9c8a2] via-[#c7af83] to-[#aa8e62] px-2">
+                    <p className="w-full whitespace-nowrap text-center text-[clamp(1.7rem,7vw,3rem)] font-black lowercase tracking-[0.06em] text-zinc-900">
+                      {currentCard.headword.toLowerCase()}
                     </p>
                   </div>
+
+                  <div className="mt-2 rounded border border-zinc-700 bg-[#f5ecd6] px-2.5 py-2 text-xs leading-relaxed text-zinc-800">
+                    {currentCard.definition}
+                  </div>
+
+                  <div className="mt-2 grid grid-cols-3 gap-2 text-center text-[11px] font-semibold text-zinc-900">
+                    <div className="rounded border border-zinc-700 bg-[#f7f0dc] px-2 py-1">ATK {currentCard.attack}</div>
+                    <div className="rounded border border-zinc-700 bg-[#f7f0dc] px-2 py-1">DEF {currentCard.defense}</div>
+                    <div className="rounded border border-zinc-700 bg-[#f7f0dc] px-2 py-1">HP {currentCard.hp}</div>
+                  </div>
+
                   <div className="mt-auto flex items-center justify-between border-t border-zinc-400 pt-2 text-[11px] font-semibold text-zinc-800">
-                    <span>頻度ランク {currentCard.frequencyRank}</span>
-                    <span>レアリティ {rarityNumber}</span>
+                    <span>{currentCard.rarity}</span>
+                    <span>Rarity {rarityNumber}</span>
                   </div>
-                </div>
-              </article>
+                </article>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsPackOpened(true)}
+                  className="flex aspect-[63/88] w-full flex-col items-center justify-center rounded-[14px] border-2 border-amber-600 bg-gradient-to-b from-amber-300 via-amber-400 to-amber-600 px-4 text-center text-slate-900 shadow-inner transition hover:brightness-110"
+                >
+                  <span className="text-xs font-bold uppercase tracking-[0.3em] text-amber-900">English Vocab</span>
+                  <span className="mt-3 text-3xl font-black">PACK</span>
+                  <span className="mt-8 rounded-full bg-black/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-amber-200">
+                    Open Pack
+                  </span>
+                </button>
+              )
             ) : (
               <div className="flex aspect-[63/88] items-center justify-center rounded-[14px] bg-[#efe5cf] text-sm text-zinc-700">
                 loading cards...
@@ -251,7 +250,7 @@ export default function App() {
                 className="flex items-center justify-center gap-2 rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg transition hover:-translate-y-0.5 hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Sparkles className="h-4 w-4" />
-                Draw New Card
+                Draw Pack
               </button>
               <button
                 type="button"
